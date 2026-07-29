@@ -1,0 +1,8 @@
+
+  IFRS17 Business Service Layer  -  SKELETON  v1.0.0
+  ---------------------------------------------------------------
+  설계서 : IFRS17-BSL-SDD-001 v1.3
+  범위   : REST/JSON 통신 껍데기 (DB / Legacy 미연동, Mock Data)
+  Endpoint : POST /api/business-services/v1/{serviceId}:execute
+  ---------------------------------------------------------------
+
