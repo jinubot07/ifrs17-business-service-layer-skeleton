@@ -16,7 +16,7 @@ DB(SqlMap/MyBatis) 연동 및 세부 비즈니스 로직 작성 **이전 단계*
 | 구분 | 내용 |
 |---|---|
 | 목적 | REST/JSON 표준 Request–Response 통신 체계 검증 (DB 없이 HTTP 200 성공 응답 확인) |
-| 검증 방법 | 화면 개발 전 단계이므로 **Postman**으로 Request/Response 성공 여부 판단 |
+| 검증 방법 | 화면 개발 전 단계이므로 **Postman 등 REST 클라이언트**로 Request/Response 성공 여부 판단 |
 | 포함 | 공통 Framework(Controller·Resolver·Dispatcher·Executor·Audit·Response Builder), 파일럿 5종 Dummy Handler, 표준 오류코드 |
 | **제외** | **SqlMap.xml / Mapper.xml 등 XML 및 DB 연결 파일 (완전 배제)**, 실제 Legacy Service 연계, SSO 실연동, Business Service Console 화면 |
 
@@ -77,7 +77,7 @@ Tomcat started on port(s): 8080 (http)
 
 ## 4. 최종 검증 방법 (Definition of Done)
 
-### 4.1 Postman 요청
+### 4.1 검증 요청 (Postman 등 REST 클라이언트)
 
 | 항목 | 값 |
 |---|---|
@@ -144,23 +144,43 @@ Tomcat started on port(s): 8080 (http)
 
 ## 5. 테스트 방법 3가지
 
-### (1) Postman Collection (권장)
+### (1) 수동 호출 시나리오 (Postman 등 REST 클라이언트)
 
-`docs/postman/IFRS17-BSL-Skeleton.postman_collection.json` 을 Postman에 **Import** 한다.
-컬렉션 변수 `baseUrl`(기본 `http://localhost:8080`), `clientId`, `closingYearMonth`를 환경에 맞게 수정하면 된다.
+모든 요청은 공통으로 아래 Header 를 사용한다. (별도 Collection 파일은 관리하지 않으며, 아래 표를 보고 직접 입력한다.)
 
-| No | 요청 | 기대 결과 |
-|---|---|---|
-| 00 | **[DoD]** 결산 진행상태 조회 | 200 / `status=SUCCESS` |
-| 01~04 | 전표·사업비·재무제표·CSM 상태 조회 | 200 / `status=SUCCESS` |
-| 05 | 데이터 없음 (`2020-01`) | 200 / 빈 결과 + `warnings[0].code=BS-DATA-000` |
-| 06 | 입력 오류 (`2026-13`) | 400 / `BS-VAL-001` |
-| 07 | `X-Client-ID` 누락 | 401 / `BS-AUTH-001` |
-| 08 | 권한 없음 (시뮬레이션) | 403 / `BS-AUTH-003` |
-| 09 | 비활성 서비스 호출 | 404 / `BS-SVC-404` |
-| 10 | Timeout (시뮬레이션) | 504 / `BS-SYS-504` |
-| 11 | Legacy 오류 (시뮬레이션) | 500 / `BS-LEG-500` |
-| 12~14 | Catalog 목록·단건, 호출이력 | 200 |
+```
+Content-Type: application/json
+X-Client-ID:  TEST-CLIENT
+```
+
+공통 URL 접두어: `http://localhost:8080/api/business-services/v1`
+
+| No | 시나리오 | Method / URI | Body(`parameters`) | 기대 결과 |
+|---|---|---|---|---|
+| 1 | **[DoD]** 결산 진행상태 조회 | `POST /IFRS17.CLOSING.STATUS:execute` | `{"closingYearMonth":"2026-06"}` | 200 / `status=SUCCESS` |
+| 2 | 전표 생성·반영 상태 조회 | `POST /IFRS17.JOURNAL.STATUS:execute` | `{"closingYearMonth":"2026-06"}` | 200 / `status=SUCCESS` |
+| 3 | 사업비 처리 상태 조회 | `POST /IFRS17.EXPENSE.STATUS:execute` | `{"closingYearMonth":"2026-06"}` | 200 / `status=SUCCESS` |
+| 4 | 재무제표 산출 상태 조회 | `POST /IFRS17.STATEMENT.STATUS:execute` | `{"closingYearMonth":"2026-06"}` | 200 / `status=SUCCESS` |
+| 5 | CSM 산출 상태 조회 | `POST /IFRS17.CSM.STATUS:execute` | `{"closingYearMonth":"2026-06"}` | 200 / `status=SUCCESS` |
+| 6 | 데이터 없음 | `POST /IFRS17.CLOSING.STATUS:execute` | `{"closingYearMonth":"2020-01"}` | 200 / 빈 결과 + `warnings[0].code=BS-DATA-000` |
+| 7 | 입력 오류 | `POST /IFRS17.CLOSING.STATUS:execute` | `{"closingYearMonth":"2026-13"}` | 400 / `BS-VAL-001` |
+| 8 | 인증 실패 (`X-Client-ID` Header 제거) | `POST /IFRS17.CLOSING.STATUS:execute` | `{"closingYearMonth":"2026-06"}` | 401 / `BS-AUTH-001` |
+| 9 | 권한 없음 (시뮬레이션) | `POST /IFRS17.CLOSING.STATUS:execute` | `{"closingYearMonth":"2026-06","__simulate":"FORBIDDEN"}` | 403 / `BS-AUTH-003` |
+| 10 | 서비스 비활성 | `POST /IFRS17.SAMPLE.DISABLED:execute` | `{"closingYearMonth":"2026-06"}` | 404 / `BS-SVC-404` |
+| 11 | Timeout (시뮬레이션) | `POST /IFRS17.CLOSING.STATUS:execute` | `{"closingYearMonth":"2026-06","__simulate":"TIMEOUT"}` | 504 / `BS-SYS-504` |
+| 12 | Legacy 오류 (시뮬레이션) | `POST /IFRS17.CLOSING.STATUS:execute` | `{"closingYearMonth":"2026-06","__simulate":"LEGACY_ERROR"}` | 500 / `BS-LEG-500` |
+| 13 | 서비스 Catalog 목록 | `GET /catalog` | — | 200 |
+| 14 | 서비스 Catalog 단건 | `GET /catalog/IFRS17.CLOSING.STATUS` | — | 200 |
+| 15 | 호출 이력 조회 (Draft) | `GET /calls/REQ-20260714-0001` | — | 200 (콘솔 로그 안내) |
+
+POST 요청 Body 전체 형태는 다음과 같다.
+
+```json
+{
+  "serviceVersion": "1.0",
+  "parameters": { "closingYearMonth": "2026-06" }
+}
+```
 
 ### (2) curl 스모크 테스트 스크립트
 
@@ -373,10 +393,10 @@ Entity/Map 무검증 직렬화 없음(전용 DTO 사용) · 권한 확인 단계
 ```bash
 mvn clean package -DskipTests
 java -Dfile.encoding=UTF-8 -jar target/ifrs17-business-service-layer-skeleton.jar
-# → http://localhost:8080 에서 Postman 검증
+# → http://localhost:8080 으로 REST 호출 검증
 ```
 
-* 필요 환경: JDK 8+ , Maven 3.6+ , Postman
+* 필요 환경: JDK 8+ , Maven 3.6+ , REST 클라이언트(Postman 등)
 * 외부 의존성(DB, SSO, Legacy) **없음** → 망 분리 환경에서도 단독 기동 가능
 
 ### 11.2 개발서버(리눅스) 백그라운드 기동
@@ -388,7 +408,7 @@ nohup java -Dfile.encoding=UTF-8 -jar ifrs17-business-service-layer-skeleton.jar
 tail -f bsl-skeleton.log        # 감사 로그([BSL-AUDIT-*]) 실시간 확인
 ```
 
-방화벽에서 8080 포트 인입을 허용하면, 현업 PC의 Postman에서
+방화벽에서 8080 포트 인입을 허용하면, 현업 PC의 REST 클라이언트에서
 `http://<개발서버IP>:8080/api/business-services/v1/IFRS17.CLOSING.STATUS:execute` 로 검증할 수 있다.
 
 ### 11.3 IFRS17 WAS(기존 컨테이너) 배포 시
@@ -414,7 +434,7 @@ tail -f bsl-skeleton.log        # 감사 로그([BSL-AUDIT-*]) 실시간 확인
 3. `legacy/adapter/XxxLegacyAdapter` 작성 (기존 Service 호출 + DTO 변환)
 4. `InMemoryServiceMetadataRepository` 에 Catalog 항목 등록
    *(실제 구현 시에는 관리 Console에서 서비스 명세를 등록 → Bean 검증 → 사용 전환, 설계서 8.4)*
-5. Postman Collection에 요청 추가 및 테스트 케이스 작성
+5. README 5장 호출 시나리오 표에 요청 추가 및 테스트 케이스 작성
 
 Dispatcher가 기동 시 `BusinessServiceHandler` 구현 Bean을 자동 수집하므로 **Controller 수정은 불필요**하다.
 `serviceId` 중복 등록 시 기동이 실패하여 조기에 오류를 검출한다.
@@ -438,8 +458,7 @@ Dispatcher가 기동 시 `BusinessServiceHandler` 구현 Bean을 자동 수집�
 .
 ├── pom.xml
 ├── README.md
-├── docs/postman/IFRS17-BSL-Skeleton.postman_collection.json   # Postman Collection (15 요청)
-├── scripts/smoke-test.sh                                      # curl 스모크 테스트 (13 시나리오)
+├── scripts/smoke-test.sh   # curl 스모크 테스트 (13 시나리오)
 └── src
     ├── main/java/com/koreanre/ifrs17/businessservice/...       # 본문 7장 참조
     ├── main/resources/{application.yml, banner.txt}

@@ -14,7 +14,7 @@ import java.util.Map;
  * <b>[Skeleton 전용]</b> 오류 시나리오 시뮬레이터.
  *
  * <p>DB·Legacy 연동 전 단계에서 설계서 11.2 필수 인수 시나리오(인증실패/권한없음/Legacy 오류/Timeout)의
- * 표준 Error Response 규격을 Postman 으로 검증할 수 있도록, 요청 파라미터
+ * 표준 Error Response 규격을 REST 호출로 검증할 수 있도록, 요청 파라미터
  * {@code __simulate} 값에 따라 표준 예외를 발생시킨다.</p>
  *
  * <p>지원 값: UNAUTHORIZED, FORBIDDEN, TIMEOUT, LEGACY_ERROR, SYSTEM_ERROR</p>
