@@ -1,0 +1,19 @@
+# Build
+target/
+build/
+out/
+*.class
+*.jar
+*.war
+
+# IDE
+.idea/
+*.iml
+.classpath
+.project
+.settings/
+.vscode/
+
+# OS / Log
+.DS_Store
+*.log
