@@ -1,6 +1,6 @@
 package com.koreanre.ifrs17.businessservice.domain.journal;
 
-import com.koreanre.ifrs17.businessservice.domain.common.ProcessingStatusCode;
+import com.koreanre.ifrs17.businessservice.api.dto.response.ProcessingStatusCode;
 
 /**
  * 전표 유형별 상태 (설계서 9.2 출력 - 생성건수, 반영건수, 오류건수, 최종처리시간).

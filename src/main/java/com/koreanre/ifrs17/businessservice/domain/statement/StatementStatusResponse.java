@@ -1,6 +1,6 @@
 package com.koreanre.ifrs17.businessservice.domain.statement;
 
-import com.koreanre.ifrs17.businessservice.domain.common.StatusServiceResponse;
+import com.koreanre.ifrs17.businessservice.api.dto.response.StatusServiceResponse;
 
 import java.util.ArrayList;
 import java.util.List;

@@ -1,7 +1,7 @@
 package com.koreanre.ifrs17.businessservice.core.dispatcher;
 
 import com.koreanre.ifrs17.businessservice.core.context.ServiceContext;
-import com.koreanre.ifrs17.businessservice.domain.BusinessServiceHandler;
+import com.koreanre.ifrs17.businessservice.core.workflow.BusinessServiceHandler;
 
 /**
  * serviceId 와 구현 Bean 매핑 컴포넌트 (설계서 4.2 - BusinessServiceDispatcher).

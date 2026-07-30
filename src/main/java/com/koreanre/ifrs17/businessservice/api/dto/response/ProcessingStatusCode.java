@@ -1,4 +1,4 @@
-package com.koreanre.ifrs17.businessservice.domain.common;
+package com.koreanre.ifrs17.businessservice.api.dto.response;
 
 /**
  * 표준 상태코드 (설계서 부록 D. 표준 상태코드 / 9.1~9.5).

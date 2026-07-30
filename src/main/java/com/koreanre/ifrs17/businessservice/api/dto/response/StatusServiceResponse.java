@@ -1,4 +1,4 @@
-package com.koreanre.ifrs17.businessservice.domain.common;
+package com.koreanre.ifrs17.businessservice.api.dto.response;
 
 /**
  * 파일럿 5종 상태조회 서비스의 공통 응답 항목 (설계서 9장).

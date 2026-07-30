@@ -1,6 +1,6 @@
 package com.koreanre.ifrs17.businessservice.domain.statement;
 
-import com.koreanre.ifrs17.businessservice.domain.common.ProcessingStatusCode;
+import com.koreanre.ifrs17.businessservice.api.dto.response.ProcessingStatusCode;
 
 /**
  * 보고서별 산출 상태 (설계서 9.4 출력 - 산출 상태, 버전, 최종생성시각).

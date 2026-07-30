@@ -1,6 +1,6 @@
 package com.koreanre.ifrs17.businessservice.domain.csm;
 
-import com.koreanre.ifrs17.businessservice.domain.common.StatusServiceRequest;
+import com.koreanre.ifrs17.businessservice.api.dto.request.StatusServiceRequest;
 
 /**
  * IFRS17.CSM.STATUS 요청 DTO (설계서 9.5).

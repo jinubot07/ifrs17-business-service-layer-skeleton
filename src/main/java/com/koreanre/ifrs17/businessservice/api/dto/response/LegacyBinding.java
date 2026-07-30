@@ -1,4 +1,4 @@
-package com.koreanre.ifrs17.businessservice.domain.common;
+package com.koreanre.ifrs17.businessservice.api.dto.response;
 
 /**
  * [Draft] 서비스별 Legacy 연계 정보.

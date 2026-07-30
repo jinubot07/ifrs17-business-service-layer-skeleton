@@ -1,6 +1,6 @@
 package com.koreanre.ifrs17.businessservice.domain.csm;
 
-import com.koreanre.ifrs17.businessservice.domain.common.ProcessingStatusCode;
+import com.koreanre.ifrs17.businessservice.api.dto.response.ProcessingStatusCode;
 
 /**
  * 포트폴리오별 CSM 산출 상태 (설계서 9.5 출력 - 산출 상태, 건수, 오류, 기준시각).

@@ -1,7 +1,7 @@
 package com.koreanre.ifrs17.businessservice.legacy.adapter;
 
-import com.koreanre.ifrs17.businessservice.domain.common.LegacyBinding;
-import com.koreanre.ifrs17.businessservice.domain.common.ProcessingStatusCode;
+import com.koreanre.ifrs17.businessservice.api.dto.response.LegacyBinding;
+import com.koreanre.ifrs17.businessservice.api.dto.response.ProcessingStatusCode;
 import com.koreanre.ifrs17.businessservice.domain.statement.StatementStatusRequest;
 import com.koreanre.ifrs17.businessservice.domain.statement.StatementStatusResponse;
 import com.koreanre.ifrs17.businessservice.domain.statement.StatementTypeStatus;

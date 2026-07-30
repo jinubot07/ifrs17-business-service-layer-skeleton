@@ -3,8 +3,8 @@ package com.koreanre.ifrs17.businessservice.legacy.adapter;
 import com.koreanre.ifrs17.businessservice.domain.closing.ClosingStageStatus;
 import com.koreanre.ifrs17.businessservice.domain.closing.ClosingStatusRequest;
 import com.koreanre.ifrs17.businessservice.domain.closing.ClosingStatusResponse;
-import com.koreanre.ifrs17.businessservice.domain.common.LegacyBinding;
-import com.koreanre.ifrs17.businessservice.domain.common.ProcessingStatusCode;
+import com.koreanre.ifrs17.businessservice.api.dto.response.LegacyBinding;
+import com.koreanre.ifrs17.businessservice.api.dto.response.ProcessingStatusCode;
 import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
 

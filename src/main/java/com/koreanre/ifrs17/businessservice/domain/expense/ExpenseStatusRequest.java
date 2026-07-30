@@ -1,6 +1,6 @@
 package com.koreanre.ifrs17.businessservice.domain.expense;
 
-import com.koreanre.ifrs17.businessservice.domain.common.StatusServiceRequest;
+import com.koreanre.ifrs17.businessservice.api.dto.request.StatusServiceRequest;
 
 /**
  * IFRS17.EXPENSE.STATUS 요청 DTO (설계서 9.3).

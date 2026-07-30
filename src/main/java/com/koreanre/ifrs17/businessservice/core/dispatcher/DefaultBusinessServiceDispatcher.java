@@ -2,7 +2,7 @@ package com.koreanre.ifrs17.businessservice.core.dispatcher;
 
 import com.koreanre.ifrs17.businessservice.core.context.ServiceContext;
 import com.koreanre.ifrs17.businessservice.core.exception.ServiceNotFoundException;
-import com.koreanre.ifrs17.businessservice.domain.BusinessServiceHandler;
+import com.koreanre.ifrs17.businessservice.core.workflow.BusinessServiceHandler;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.PostConstruct;

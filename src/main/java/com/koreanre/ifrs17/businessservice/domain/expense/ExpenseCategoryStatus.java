@@ -1,6 +1,6 @@
 package com.koreanre.ifrs17.businessservice.domain.expense;
 
-import com.koreanre.ifrs17.businessservice.domain.common.ProcessingStatusCode;
+import com.koreanre.ifrs17.businessservice.api.dto.response.ProcessingStatusCode;
 
 /**
  * 사업비 구분별 적재/검증/배부 상태 (설계서 9.3 출력).

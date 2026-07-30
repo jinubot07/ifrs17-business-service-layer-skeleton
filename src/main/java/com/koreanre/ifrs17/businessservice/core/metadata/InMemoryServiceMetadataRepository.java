@@ -106,4 +106,26 @@ public class InMemoryServiceMetadataRepository implements ServiceMetadataReposit
     public ServiceMetadata findById(String serviceId) {
         return catalog.get(serviceId);
     }
+
+    @Override
+    public ServiceMetadata save(ServiceMetadata metadata) {
+        catalog.put(metadata.getServiceId(), metadata);
+        System.out.println("[BSL-CONSOLE] 서비스 명세 저장: serviceId=" + metadata.getServiceId()
+                + ", version=" + metadata.getVersion()
+                + ", bean=" + metadata.getImplementationBean()
+                + ", active=" + metadata.isActive());
+        return metadata;
+    }
+
+    @Override
+    public ServiceMetadata updateActive(String serviceId, boolean active) {
+        ServiceMetadata metadata = catalog.get(serviceId);
+        if (metadata == null) {
+            return null;
+        }
+        metadata.setActive(active);
+        System.out.println("[BSL-CONSOLE] 사용여부 변경: serviceId=" + serviceId
+                + ", active=" + active);
+        return metadata;
+    }
 }

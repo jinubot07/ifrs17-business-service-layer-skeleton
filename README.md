@@ -1,4 +1,4 @@
-# IFRS17 Business Service Layer — Skeleton (Branch: `Skeleton_v1.1`)
+# IFRS17 Business Service Layer — Skeleton (Branch: `Skeleton_v1.2`)
 
 > IFRS17 시스템 AI 활용 기반 마련 방안 / Business Service Layer
 > **설계서 기준: `IFRS17-BSL-SDD-001` v1.3 (Approved for Development)**
@@ -17,8 +17,8 @@ DB(SqlMap/MyBatis) 연동 및 세부 비즈니스 로직 작성 **이전 단계*
 |---|---|
 | 목적 | REST/JSON 표준 Request–Response 통신 체계 검증 (DB 없이 HTTP 200 성공 응답 확인) |
 | 검증 방법 | 화면 개발 전 단계이므로 **Postman 등 REST 클라이언트**로 Request/Response 성공 여부 판단 |
-| 포함 | 공통 Framework(Controller·Resolver·Dispatcher·Executor·Audit·Response Builder), 파일럿 5종 Dummy Handler, 표준 오류코드 |
-| **제외** | **SqlMap.xml / Mapper.xml 등 XML 및 DB 연결 파일 (완전 배제)**, 실제 Legacy Service 연계, SSO 실연동, Business Service Console 화면 |
+| 포함 | 공통 Framework(Controller·Resolver·Dispatcher·Executor·Audit·Response Builder), 파일럿 5종 Dummy Handler, 표준 오류코드, Console 백엔드 API |
+| **제외** | **SqlMap.xml / Mapper.xml 등 XML 및 DB 연결 파일 (완전 배제)**, 실제 Legacy Service 연계, SSO 실연동, Console 화면(UI) |
 
 ### 개발 원칙
 
@@ -49,9 +49,9 @@ DB(SqlMap/MyBatis) 연동 및 세부 비즈니스 로직 작성 **이전 단계*
 # 1) 소스 받기
 git clone <REPO_URL>
 cd ifrs17-business-service-layer-skeleton
-git checkout Skeleton_v1.1
+git checkout Skeleton_v1.2
 
-# 2) 빌드 + 단위/통합 테스트 (14건)
+# 2) 빌드 + 단위/통합 테스트 (22건)
 mvn clean test
 
 # 3) 실행 (둘 중 하나)
@@ -197,10 +197,13 @@ POST 요청 Body 전체 형태는 다음과 같다.
 
 ```bash
 mvn test
-# Tests run: 14, Failures: 0, Errors: 0, Skipped: 0
+# Tests run: 22, Failures: 0, Errors: 0, Skipped: 0
 ```
 
-`src/test/java/.../BusinessServiceControllerTest.java` — DoD 시나리오 및 설계서 11.2 필수 인수 시나리오를 자동 검증한다.
+| 테스트 클래스 | 건수 | 검증 범위 |
+|---|---|---|
+| `BusinessServiceControllerTest` | 14 | DoD 시나리오 및 설계서 11.2 필수 인수 시나리오 |
+| `ServiceConsoleControllerTest` | 8 | 설계서 8.7 Console 인수 기준 (CON-ACC-01 ~ CON-ACC-05) |
 
 ### 오류 시나리오 시뮬레이션 (`__simulate`)
 
@@ -252,42 +255,60 @@ DB·Legacy 미연동 상태에서도 표준 Error Response 규격을 검증할 �
 
 ---
 
-## 7. 패키지 구조 (설계서 4.1 준수)
+## 7. 패키지 구조 (설계서 4.1 전수 준수)
+
+설계서 4.1 권장 패키지 구조 **23개 패키지를 그대로 사용**한다.
+설계서에 없는 패키지는 만들지 않으며, 공통 DTO·표준 인터페이스도 4.1 목록 안에 배치한다.
 
 ```
 com.koreanre.ifrs17.businessservice
-├── BusinessServiceLayerApplication.java
-├── api
-│   ├── controller
-│   │   ├── BusinessServiceController.java         # POST /{serviceId}:execute, /catalog, /calls
-│   │   └── BusinessServiceExceptionHandler.java   # Framework 오류 → 표준 Error Response
-│   └── dto
-│       ├── request   : StandardRequest, RequestOptions
-│       └── response  : StandardResponse, StandardError, ErrorDetail, Warning, ResponseStatus
-├── core
-│   ├── context    : ServiceContext, RequestContextResolver(I), HttpHeaderRequestContextResolver, IdGenerator
-│   ├── dispatcher : BusinessServiceDispatcher(I), DefaultBusinessServiceDispatcher
-│   ├── executor   : BusinessServiceExecutor(I), DefaultBusinessServiceExecutor, SkeletonFailureSimulator
-│   ├── validator  : ValidationUtils, StandardRequestValidator, ParameterBinder
-│   ├── workflow   : (Phase 1 미구현 — package-info.java 에 사유 기재)
-│   ├── security   : ClientAuthenticationService(I)/Dummy, AuthorizationService(I)/Dummy, MaskingPolicy(I)/Default
-│   ├── audit      : AuditLogger(I), ConsoleAuditLogger, AuditRecord
-│   ├── exception  : ErrorCode(enum), BusinessServiceException 외 7종
-│   ├── metadata   : ServiceMetadata, ServiceMetadataRepository(I), InMemoryServiceMetadataRepository
-│   └── response   : StandardResponseBuilder(I), DefaultStandardResponseBuilder
-├── domain
-│   ├── BusinessServiceHandler.java                # 표준 인터페이스 (serviceId/requestType/validate/authorize/process)
-│   ├── common     : ProcessingStatusCode, StatusServiceRequest/Response, LegacyBinding
-│   ├── closing    : DummyClosingStatusHandler, ClosingStatusRequest/Response, ClosingStageStatus
-│   ├── journal    : DummyJournalStatusHandler, ...
-│   ├── expense    : DummyExpenseStatusHandler, ...
-│   ├── statement  : DummyStatementStatusHandler, ...
-│   └── csm        : DummyCsmStatusHandler, ...
-└── legacy.adapter : LegacyAdapter(I), Dummy{Closing|Journal|Expense|Statement|Csm}StatusLegacyAdapter, MockDataPolicy
+├── BusinessServiceLayerApplication.java            # Spring Boot 기동 클래스
+├── api.controller     : BusinessServiceController, BusinessServiceExceptionHandler
+├── api.dto.request    : StandardRequest, RequestOptions, StatusServiceRequest
+├── api.dto.response   : StandardResponse, StandardError, ErrorDetail, Warning, ResponseStatus,
+│                        StatusServiceResponse, ProcessingStatusCode, LegacyBinding
+├── core.context       : ServiceContext, RequestContextResolver(I), HttpHeaderRequestContextResolver, IdGenerator
+├── core.dispatcher    : BusinessServiceDispatcher(I), DefaultBusinessServiceDispatcher
+├── core.executor      : BusinessServiceExecutor(I), DefaultBusinessServiceExecutor, SkeletonFailureSimulator
+├── core.validator     : ValidationUtils, StandardRequestValidator, ParameterBinder
+├── core.workflow      : BusinessServiceHandler(I)          # 4.4 표준 인터페이스
+├── core.security      : ClientAuthenticationService(I)/Dummy, AuthorizationService(I)/Dummy, MaskingPolicy(I)/Default
+├── core.audit         : AuditLogger(I), ConsoleAuditLogger, AuditRecord
+├── core.exception     : ErrorCode(enum) 외 8종
+├── core.metadata      : ServiceMetadata, ServiceMetadataRepository(I), InMemoryServiceMetadataRepository
+├── core.response      : StandardResponseBuilder(I), DefaultStandardResponseBuilder
+├── domain.closing     : DummyClosingStatusHandler, ClosingStatusRequest/Response, ClosingStageStatus
+├── domain.journal     : DummyJournalStatusHandler, JournalStatusRequest/Response, JournalTypeStatus
+├── domain.expense     : DummyExpenseStatusHandler, ExpenseStatusRequest/Response, ExpenseCategoryStatus
+├── domain.statement   : DummyStatementStatusHandler, StatementStatusRequest/Response, StatementTypeStatus
+├── domain.csm         : DummyCsmStatusHandler, CsmStatusRequest/Response, CsmPortfolioStatus
+├── legacy.adapter     : LegacyAdapter(I), Dummy{Closing|Journal|Expense|Statement|Csm}StatusLegacyAdapter, MockDataPolicy
+├── console            : ServiceSpecificationConsoleController(CON-01), ServiceTestConsoleController(CON-02),
+│                        ServiceSpecificationForm, ServiceSpecificationValidator
+├── persistence.mapper : BsServiceMapper, BsServiceVersionMapper, BsCallLogMapper   # Java 인터페이스만
+└── persistence.model  : BsService, BsServiceVersion, BsCallLog                     # 7.3 DDL 대응 POJO
 ```
 
-> `console`, `persistence.mapper`, `persistence.model` 패키지는 **의도적으로 생성하지 않았다.**
-> Console 화면은 Phase 1 별도 개발 대상이고, persistence 는 "XML 및 DB 연결 파일 완전 배제" 원칙에 따른다.
+### 배치 근거
+
+| 클래스 | 배치 패키지 | 근거 |
+|---|---|---|
+| `BusinessServiceHandler` | `core.workflow` | 설계서 4.2에서 공통 Framework 핵심 컴포넌트로 정의되며, `validate → authorize → process` 가 서비스 단위 처리 Workflow 에 해당 |
+| `StatusServiceRequest` | `api.dto.request` | 파일럿 5종 공통 요청 항목(기준년월)의 상위 DTO |
+| `StatusServiceResponse`<br>`ProcessingStatusCode`<br>`LegacyBinding` | `api.dto.response` | 응답 Payload 공통 항목 및 부록 D 표준 상태코드 |
+
+### persistence 패키지 처리 기준
+
+설계서 4.1에 명시된 패키지이므로 **생성하되, "XML 및 DB 연결 파일 완전 배제" 원칙을 지킨다.**
+
+| 포함 | 미포함 (DB 연동 단계에서 추가) |
+|---|---|
+| Java 인터페이스(Mapper 계약) | SqlMap.xml / Mapper.xml |
+| 7.3 DDL 대응 POJO | MyBatis `@Mapper` 애노테이션, DataSource 설정 |
+| — | Mapper 구현체 Bean 등록 |
+
+현재 Catalog 조회는 `InMemoryServiceMetadataRepository`, 감사로그는 `ConsoleAuditLogger` 가 담당하며,
+DB 연동 단계에서 위 Mapper 를 사용하는 구현체로 교체한다.
 
 ---
 
@@ -301,6 +322,18 @@ com.koreanre.ifrs17.businessservice
 | GET | `/api/business-services/v1/catalog` | 서비스 Catalog 목록 | 구현 (In-Memory) |
 | GET | `/api/business-services/v1/catalog/{serviceId}` | 서비스 Catalog 단건 | 구현 (In-Memory) |
 | GET | `/api/business-services/v1/calls/{requestId}` | 호출 이력 조회 | **Draft** (계약만 제공, 콘솔 로그 안내 반환) |
+
+**Business Service Console (설계서 8장 / URI 미확정 — Draft)**
+
+| 화면 | Method | URI | 설명 |
+|---|---|---|---|
+| CON-01 | GET | `/api/business-service-console/v1/services` | 서비스 명세 목록 |
+| CON-01 | GET | `/api/business-service-console/v1/services/{serviceId}` | 서비스 명세 상세 |
+| CON-01 | POST | `/api/business-service-console/v1/services` | 명세 등록/수정 (Bean·Interface·Service ID 자동 검증) |
+| CON-01 | PATCH | `/api/business-service-console/v1/services/{serviceId}/active?use=true\|false` | 사용/미사용 전환 |
+| CON-02 | POST | `/api/business-service-console/v1/services/{serviceId}/test` | 서비스 Test (운영과 동일 경로로 위임) |
+
+> 화면(UI)은 Skeleton 범위가 아니며 **Console 백엔드 API 만** 제공한다. Console URI 는 설계서에 명시되지 않아 임시 규칙을 사용한다.
 
 ### 8.2 필수 Header (5.2)
 
@@ -462,12 +495,12 @@ Dispatcher가 기동 시 `BusinessServiceHandler` 구현 Bean을 자동 수집�
 └── src
     ├── main/java/com/koreanre/ifrs17/businessservice/...       # 본문 7장 참조
     ├── main/resources/{application.yml, banner.txt}
-    └── test/java/.../BusinessServiceControllerTest.java        # MockMvc 테스트 14건
+    └── test/java/.../{BusinessServiceControllerTest, console/ServiceConsoleControllerTest}.java  # 22건
 ```
 
 | 검증 항목 | 결과 |
 |---|---|
-| `mvn clean test` | **Tests run: 14, Failures: 0, Errors: 0** |
+| `mvn clean test` | **Tests run: 22, Failures: 0, Errors: 0** |
 | `./scripts/smoke-test.sh` | **PASS=13, FAIL=0** |
 | DoD (`IFRS17.CLOSING.STATUS:execute`) | **HTTP 200 / `status=SUCCESS`** |
 
@@ -478,8 +511,9 @@ Dispatcher가 기동 시 `BusinessServiceHandler` 구현 Bean을 자동 수집�
 | 브랜치 | 용도 |
 |---|---|
 | `main` | 기준 브랜치. 검수 완료분만 반영한다. |
-| `Skeleton_v1.1` | Skeleton 구현본 v1.1 (본 브랜치) |
-| `Skeleton_v1.2`, `v1.3`, ... | 이후 Skeleton 개선·보완 시 버전을 올려 신규 브랜치로 관리한다. |
+| `Skeleton_v1.1` | Skeleton 구현본 v1.1 |
+| `Skeleton_v1.2` | Skeleton 구현본 v1.2 — 설계서 4.1 패키지 구조 전수 준수 (본 브랜치) |
+| `Skeleton_v1.3`, `v1.4`, ... | 이후 Skeleton 개선·보완 시 버전을 올려 신규 브랜치로 관리한다. |
 
 각 버전 브랜치는 `main` 에서 파생하며, 이전 버전 브랜치는 이력 추적을 위해 보존한다.
 

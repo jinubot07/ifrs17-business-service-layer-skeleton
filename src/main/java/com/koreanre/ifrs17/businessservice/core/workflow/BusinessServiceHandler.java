@@ -1,4 +1,4 @@
-package com.koreanre.ifrs17.businessservice.domain;
+package com.koreanre.ifrs17.businessservice.core.workflow;
 
 import com.koreanre.ifrs17.businessservice.core.context.ServiceContext;
 

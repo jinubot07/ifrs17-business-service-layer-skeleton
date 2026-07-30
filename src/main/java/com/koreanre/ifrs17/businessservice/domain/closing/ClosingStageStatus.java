@@ -1,6 +1,6 @@
 package com.koreanre.ifrs17.businessservice.domain.closing;
 
-import com.koreanre.ifrs17.businessservice.domain.common.ProcessingStatusCode;
+import com.koreanre.ifrs17.businessservice.api.dto.response.ProcessingStatusCode;
 
 /**
  * 결산 단계별 상태 (설계서 9.1 출력 - 단계별 상태, 시작/종료시간, 진행률, 오류건수).

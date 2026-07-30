@@ -23,7 +23,10 @@ public class ServiceMetadata {
     private final int timeoutMs;
     private final Set<String> requiredRoles;
     private final String sensitivePolicy;
-    private final boolean active;
+    private final String description;
+    private final String requestSchema;
+    private final String responseSchema;
+    private boolean active;
 
     /**
      * [Draft/미정] 이 서비스가 호출할 IFRS17 배치 프로그램 ID.
@@ -49,6 +52,9 @@ public class ServiceMetadata {
         this.timeoutMs = builder.timeoutMs;
         this.requiredRoles = Collections.unmodifiableSet(new LinkedHashSet<String>(builder.requiredRoles));
         this.sensitivePolicy = builder.sensitivePolicy;
+        this.description = builder.description;
+        this.requestSchema = builder.requestSchema;
+        this.responseSchema = builder.responseSchema;
         this.active = builder.active;
         this.legacyBatchProgramId = builder.legacyBatchProgramId;
         this.legacyScreenName = builder.legacyScreenName;
@@ -106,6 +112,23 @@ public class ServiceMetadata {
         return active;
     }
 
+    /** 사용/미사용 전환 (설계서 8.3 사용 여부 / 8.7 CON-ACC-03). */
+    public void setActive(boolean active) {
+        this.active = active;
+    }
+
+    public String getDescription() {
+        return description;
+    }
+
+    public String getRequestSchema() {
+        return requestSchema;
+    }
+
+    public String getResponseSchema() {
+        return responseSchema;
+    }
+
     public String getLegacyBatchProgramId() {
         return legacyBatchProgramId;
     }
@@ -128,6 +151,9 @@ public class ServiceMetadata {
         private Set<String> requiredRoles = new LinkedHashSet<String>();
         private String sensitivePolicy = "DEFAULT_MASKING";
         private boolean active = true;
+        private String description;
+        private String requestSchema;
+        private String responseSchema;
         private String legacyBatchProgramId = "TBD";
         private String legacyScreenName = "TBD";
 
@@ -168,6 +194,21 @@ public class ServiceMetadata {
         public Builder requiredRoles(String... roles) {
             this.requiredRoles = new LinkedHashSet<String>();
             Collections.addAll(this.requiredRoles, roles);
+            return this;
+        }
+
+        public Builder description(String description) {
+            this.description = description;
+            return this;
+        }
+
+        public Builder requestSchema(String requestSchema) {
+            this.requestSchema = requestSchema;
+            return this;
+        }
+
+        public Builder responseSchema(String responseSchema) {
+            this.responseSchema = responseSchema;
             return this;
         }
 

@@ -23,4 +23,10 @@ public interface ServiceMetadataRepository {
 
     /** 활성/비활성 무관 단건 조회 (설계서 5.1 GET /catalog/{serviceId}). */
     ServiceMetadata findById(String serviceId);
+
+    /** 서비스 명세 등록/수정 (설계서 8.3 관리 Console). */
+    ServiceMetadata save(ServiceMetadata metadata);
+
+    /** 사용/미사용 전환 (설계서 8.4 - 6·7단계, 8.7 CON-ACC-03). */
+    ServiceMetadata updateActive(String serviceId, boolean active);
 }

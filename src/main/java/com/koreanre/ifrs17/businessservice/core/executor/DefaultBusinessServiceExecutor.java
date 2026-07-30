@@ -2,6 +2,7 @@ package com.koreanre.ifrs17.businessservice.core.executor;
 
 import com.koreanre.ifrs17.businessservice.api.dto.request.StandardRequest;
 import com.koreanre.ifrs17.businessservice.api.dto.response.StandardResponse;
+import com.koreanre.ifrs17.businessservice.api.dto.response.StatusServiceResponse;
 import com.koreanre.ifrs17.businessservice.core.audit.AuditLogger;
 import com.koreanre.ifrs17.businessservice.core.audit.AuditRecord;
 import com.koreanre.ifrs17.businessservice.core.context.IdGenerator;
@@ -19,8 +20,7 @@ import com.koreanre.ifrs17.businessservice.core.security.ClientAuthenticationSer
 import com.koreanre.ifrs17.businessservice.core.security.MaskingPolicy;
 import com.koreanre.ifrs17.businessservice.core.validator.ParameterBinder;
 import com.koreanre.ifrs17.businessservice.core.validator.StandardRequestValidator;
-import com.koreanre.ifrs17.businessservice.domain.BusinessServiceHandler;
-import com.koreanre.ifrs17.businessservice.domain.common.StatusServiceResponse;
+import com.koreanre.ifrs17.businessservice.core.workflow.BusinessServiceHandler;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;

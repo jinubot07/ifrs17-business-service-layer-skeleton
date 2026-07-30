@@ -2,7 +2,7 @@ package com.koreanre.ifrs17.businessservice.domain.journal;
 
 import com.koreanre.ifrs17.businessservice.core.context.ServiceContext;
 import com.koreanre.ifrs17.businessservice.core.validator.ValidationUtils;
-import com.koreanre.ifrs17.businessservice.domain.BusinessServiceHandler;
+import com.koreanre.ifrs17.businessservice.core.workflow.BusinessServiceHandler;
 import com.koreanre.ifrs17.businessservice.legacy.adapter.DummyJournalStatusLegacyAdapter;
 import com.koreanre.ifrs17.businessservice.legacy.adapter.MockDataPolicy;
 import org.springframework.stereotype.Component;
