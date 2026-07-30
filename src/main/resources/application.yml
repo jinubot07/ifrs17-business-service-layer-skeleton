@@ -1,0 +1,38 @@
+# IFRS17 Business Service Layer - Skeleton 설정
+# 설계서 IFRS17-BSL-SDD-001 v1.3
+server:
+  port: 8080
+  servlet:
+    encoding:
+      charset: UTF-8
+      force: true
+
+spring:
+  application:
+    name: ifrs17-business-service-layer-skeleton
+  mvc:
+    # URI 규칙 "POST /{serviceId}:execute" (설계서 5.1) 지원을 위해 Ant Path Matcher 사용
+    pathmatch:
+      matching-strategy: ant_path_matcher
+    # 미정의 URI 도 표준 Error Response(BS-SVC-404)로 반환하기 위함
+    throw-exception-if-no-handler-found: true
+  web:
+    resources:
+      add-mappings: false
+  jackson:
+    time-zone: Asia/Seoul
+    serialization:
+      write-dates-as-timestamps: false
+    deserialization:
+      fail-on-unknown-properties: false
+
+# Business Service Layer 고유 설정
+business-service:
+  source-system: IFRS17
+  default-timeout-ms: 30000     # 설계서 3.3 / 9장 기본 Timeout
+  max-response-size-mb: 5       # 설계서 3.3 Response Size 제한
+
+logging:
+  level:
+    root: INFO
+    com.koreanre.ifrs17.businessservice: DEBUG
