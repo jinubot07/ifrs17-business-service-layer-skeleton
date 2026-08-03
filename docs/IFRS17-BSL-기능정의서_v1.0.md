@@ -2,7 +2,8 @@
 
 > **문서번호** IFRS17-BSL-FD-001 · **버전** 1.0
 > **근거 설계서** IFRS17-BSL-SDD-001 v1.3 — 4.3 표준 처리 순서 / 부록 A 표준 오류코드
-> **대상 소스** `Skeleton_v1.3` (`com.koreanre.ifrs17.businessservice`)
+> **대상 소스** `Skeleton_v1.4` (`com.koreanre.ifrs17.businessservice`)
+> **Excel 판** `docs/IFRS17-BSL-기능정의서_v1.0.xlsx` (기능정의서 WBS · 오류코드 매핑 · 통합테스트 케이스 · 진척 요약)
 > **용도** 개발 진행 관리 · 통합테스트 기준서
 
 ---
@@ -11,7 +12,7 @@
 
 | 용도 | 사용 章 |
 |---|---|
-| 개발 진행 관리 | 3장 기능 목록(Master), 9장 진행 관리 대장 |
+| 개발 진행 관리 | 3장 기능 목록(WBS), 9장 진행 관리 대장, Excel 「진척 요약」 |
 | 통합테스트 수행 | 5장 기능 상세(단계별 판정 기준), 8장 통합테스트 케이스 |
 | 오류 처리 검증 | 6장 오류코드 역매핑, 7장 미구현 오류코드 |
 | 실구현 전환 계획 | 5장 "현재 상태" 열, 10장 전환 영향 범위 |
@@ -42,29 +43,98 @@ TC-nn-x         통합테스트 케이스
 
 ---
 
-## 3. 기능 목록 (Master)
+## 3. 기능 목록 (WBS)
 
-전 단계는 **`DefaultBusinessServiceExecutor.execute()`** 가 순차 호출한다. "호출 위치"는 해당 파일의 라인이다.
+설계서 4.3 표준 처리 순서를 **대분류 → 중분류(표준 처리 단계) → 소분류(세부 기능)** 3계층으로 분해한 WBS 이다.
 
-| 기능ID | 설계서<br>번호 | 소스<br>주석 | 기능명 | 담당 컴포넌트 | 호출<br>위치 | 발생 오류코드 | 현재<br>상태 |
-|---|:---:|:---:|---|---|:---:|---|:---:|
-| BSL-F-06 | 6 | (1) | HTTP Header/Body 수신 | `BusinessServiceController` | `:63` | BS-VAL-001 | ✅ 완료 |
-| BSL-F-07 | 7 | (2) | Request ID 생성·검증 | `HttpHeaderRequestContextResolver`<br>`IdGenerator` | `:97` | — | ✅ 완료 |
-| BSL-F-08 | 8 | (3) | 호출 Client 검증 | `DummyClientAuthenticationService` | `:100` | BS-AUTH-001<br>BS-AUTH-002 | ⚠️ Mock |
-| BSL-F-09 | 9 | (4) | SSO 사용자 Context 추출 | `HttpHeaderRequestContextResolver` | `:97` | BS-AUTH-001 | ⚠️ Mock |
-| BSL-F-10 | 10 | (5) | Catalog 활성 버전 조회 | `InMemoryServiceMetadataRepository` | `:103` | BS-SVC-404 | ⚠️ Mock |
-| BSL-F-11 | 11 | (6) | 서비스/역할 권한 확인 | `DummyAuthorizationService`<br>`Handler.authorize()` | `:111`<br>`:123` | BS-AUTH-003 | ⚠️ Mock |
-| BSL-F-12 | 12 | (7) | 입력 Schema·파라미터 검증 | `StandardRequestValidator`<br>`ParameterBinder`<br>`ValidationUtils` | `:115`<br>`:119`<br>`:120` | BS-VAL-001<br>BS-VAL-002 | ✅ 완료 |
-| BSL-F-13 | 13 | (8) | 감사 시작 로그 기록 | `ConsoleAuditLogger.start()` | `:126` | — | ⚠️ Mock |
-| BSL-F-14 | 14 | (9) | Business Service Handler 실행 | `DefaultBusinessServiceDispatcher`<br>`Dummy*StatusHandler` | `:118`<br>`:130` | BS-SVC-404 | ⚠️ Mock |
-| BSL-F-15 | 15 | (10) | Legacy Adapter 호출 | `Dummy*StatusLegacyAdapter` | Handler<br>내부 | BS-LEG-500<br>BS-SYS-504 | ⚠️ Mock |
-| BSL-F-16 | 16 | (11) | 표준 JSON 변환·마스킹 | `DefaultMaskingPolicy` | `:133` | BS-DATA-000<sup>주</sup> | ⚠️ Mock |
-| BSL-F-17 | 17 | (12) | 감사 성공/실패 로그 기록 | `ConsoleAuditLogger.success()/fail()` | `:138`<br>`:174` | — | ⚠️ Mock |
-| BSL-F-18 | 18 | (13) | 표준 Response 반환 | `DefaultStandardResponseBuilder` | `:141`<br>`:181` | BS-SYS-500 | ✅ 완료 |
+**소분류가 WBS 최하위 작업 단위**이며, 개발·단위테스트·통합테스트의 관리 단위가 된다.
 
-<sup>주</sup> BS-DATA-000은 오류가 아니라 **성공 응답의 `warnings[]`** 로 반환된다(설계서 4.5).
+> 📊 **Excel 판(16개 열 전체)**: `docs/IFRS17-BSL-기능정의서_v1.0.xlsx` — 아래 표에 더해 `API/호출 정보` · `처리 내용` · `입력 데이터` · `출력 데이터` · `설계서 근거` · `비고` 열을 포함한다.
 
-**상태 범례** — ✅ 완료: 실구현과 동일 / ⚠️ Mock: 계약·흐름은 완성, 내부는 하드코딩
+| WBS ID | 대분류 | 중분류(표준 처리 단계) | 소분류(세부 기능) | 기능ID | 담당 컴포넌트(파일) | 메서드 · 호출 위치 | 오류코드 | 상태 |
+|---|---|---|---|---|---|---|---|:---:|
+| A-1-1 | A. 요청 수신·식별 | (6) HTTP Header 및 Request Body 수신 | Endpoint 매핑 | BSL-F-06 | `api/controller/BusinessServiceController.java` | `execute(serviceId, request, httpRequest)  :63` | — | ✅ 완료 |
+| A-1-2 | A. 요청 수신·식별 | (6) HTTP Header 및 Request Body 수신 | Request Body 역직렬화 | BSL-F-06 | `api/dto/request/StandardRequest.java, RequestOptions.java` | `Jackson ObjectMapper (자동)` | `BS-VAL-001` | ✅ 완료 |
+| A-1-3 | A. 요청 수신·식별 | (6) HTTP Header 및 Request Body 수신 | Executor 위임 | BSL-F-06 | `api/controller/BusinessServiceController.java` | `executor.execute(...)  :66` | — | ✅ 완료 |
+| A-1-4 | A. 요청 수신·식별 | (6) HTTP Header 및 Request Body 수신 | JSON 파싱 오류 처리 | BSL-F-06 | `api/controller/BusinessServiceExceptionHandler.java` | `handleUnreadable()  :44` | `BS-VAL-001` | ✅ 완료 |
+| A-1-5 | A. 요청 수신·식별 | (6) HTTP Header 및 Request Body 수신 | 미정의 URI 처리 | BSL-F-06 | `api/controller/BusinessServiceExceptionHandler.java` | `handleNoHandler()  :50` | `BS-SVC-404` | ✅ 완료 |
+| A-2-1 | A. 요청 수신·식별 | (7) Request ID 생성 또는 검증 | X-Request-ID 수신 검증 | BSL-F-07 | `core/context/HttpHeaderRequestContextResolver.java` | `resolve(...)  Executor:97` | — | ✅ 완료 |
+| A-2-2 | A. 요청 수신·식별 | (7) Request ID 생성 또는 검증 | Request ID 채번 | BSL-F-07 | `core/context/IdGenerator.java` | `newRequestId()` | — | ✅ 완료 |
+| A-2-3 | A. 요청 수신·식별 | (7) Request ID 생성 또는 검증 | Trace ID 채번 | BSL-F-07 | `core/context/IdGenerator.java` | `newTraceId()` | — | ✅ 완료 |
+| A-2-4 | A. 요청 수신·식별 | (7) Request ID 생성 또는 검증 | 요청 시각 기록 | BSL-F-07 | `core/context/ServiceContext.java` | `setRequestedAt(LocalDateTime.now())` | — | ✅ 완료 |
+| | | | | | | | | |
+| B-1-1 | B. 인증 | (8) 호출 Client 검증 | X-Client-ID 필수 확인 | BSL-F-08 | `core/security/DummyClientAuthenticationService.java` | `authenticate(context)  Executor:100` | `BS-AUTH-001` | ⚠️ Mock |
+| B-1-2 | B. 인증 | (8) 호출 Client 검증 | Client 허용목록 조회 | BSL-F-08 | `(미구현) persistence/mapper 계약 활용` | `-` | `BS-AUTH-001` | ⬜ 미구현 |
+| B-1-3 | B. 인증 | (8) 호출 Client 검증 | SSO Token 유효성 검증 | BSL-F-08 | `(미구현) 현재 수신만 하고 미검증` | `-` | `BS-AUTH-002` | ⬜ 미구현 |
+| B-1-4 | B. 인증 | (8) 호출 Client 검증 | 인증 결과 로그 출력 | BSL-F-08 | `core/security/DummyClientAuthenticationService.java` | `System.out [BSL-AUTHN]` | — | ⚠️ Mock |
+| B-2-1 | B. 인증 | (9) SSO 사용자 Context 추출 | 사용자 ID 추출 | BSL-F-09 | `core/context/HttpHeaderRequestContextResolver.java` | `resolve(...)  Executor:97` | `BS-AUTH-001` | ⚠️ Mock |
+| B-2-2 | B. 인증 | (9) SSO 사용자 Context 추출 | 부서코드 설정 | BSL-F-09 | `core/context/HttpHeaderRequestContextResolver.java` | `MOCK_DEPARTMENT_CODE` | — | ⚠️ Mock |
+| B-2-3 | B. 인증 | (9) SSO 사용자 Context 추출 | 사용자 역할 목록 설정 | BSL-F-09 | `core/context/HttpHeaderRequestContextResolver.java` | `MOCK_ROLES` | — | ⚠️ Mock |
+| B-2-4 | B. 인증 | (9) SSO 사용자 Context 추출 | 인증유형·원격IP 기록 | BSL-F-09 | `core/context/HttpHeaderRequestContextResolver.java` | `resolveRemoteIp()` | — | ✅ 완료 |
+| B-2-5 | B. 인증 | (9) SSO 사용자 Context 추출 | Locale 설정 | BSL-F-09 | `core/context/HttpHeaderRequestContextResolver.java` | `resolve(...)` | — | ✅ 완료 |
+| | | | | | | | | |
+| C-1-1 | C. 서비스 확정·인가 | (10) Service Catalog 활성 버전 조회 | Catalog 단건 조회 | BSL-F-10 | `core/metadata/InMemoryServiceMetadataRepository.java` | `findActive(serviceId, version)  Executor:103` | `BS-SVC-404` | ⚠️ Mock |
+| C-1-2 | C. 서비스 확정·인가 | (10) Service Catalog 활성 버전 조회 | 활성(사용) 여부 판정 | BSL-F-10 | `core/metadata/InMemoryServiceMetadataRepository.java` | `metadata.isActive()` | `BS-SVC-404` | ⚠️ Mock |
+| C-1-3 | C. 서비스 확정·인가 | (10) Service Catalog 활성 버전 조회 | 요청 버전 일치 판정 | BSL-F-10 | `core/metadata/InMemoryServiceMetadataRepository.java` | `version 비교` | `BS-SVC-404` | ⚠️ Mock |
+| C-1-4 | C. 서비스 확정·인가 | (10) Service Catalog 활성 버전 조회 | 미존재·비활성 예외 발생 | BSL-F-10 | `core/exception/ServiceNotFoundException.java` | `Executor:104` | `BS-SVC-404` | ✅ 완료 |
+| C-1-5 | C. 서비스 확정·인가 | (10) Service Catalog 활성 버전 조회 | Context 서비스 버전 확정 | BSL-F-10 | `core/context/ServiceContext.java` | `setServiceVersion()  Executor:108` | — | ✅ 완료 |
+| C-2-1 | C. 서비스 확정·인가 | (11) 서비스/역할 권한 확인 | 공통 역할 대조 | BSL-F-11 | `core/security/DummyAuthorizationService.java` | `authorize(context, metadata)  Executor:111` | `BS-AUTH-003` | ⚠️ Mock |
+| C-2-2 | C. 서비스 확정·인가 | (11) 서비스/역할 권한 확인 | 인가 결과 로그 출력 | BSL-F-11 | `core/security/DummyAuthorizationService.java` | `System.out [BSL-AUTHZ]` | — | ⚠️ Mock |
+| C-2-3 | C. 서비스 확정·인가 | (11) 서비스/역할 권한 확인 | 업무 파라미터 기반 추가 인가 | BSL-F-11 | `core/workflow/BusinessServiceHandler.java (도메인 5종 구현)` | `handler.authorize(context, req)  Executor:123` | `BS-AUTH-003` | ⚠️ Mock |
+| | | | | | | | | |
+| D-1-1 | D. 입력 검증 | (12) 입력 Schema 및 업무 파라미터 검증 | Envelope 검증 | BSL-F-12 | `core/validator/StandardRequestValidator.java` | `validate(request, metadata)  Executor:115` | `BS-VAL-001` | ✅ 완료 |
+| D-1-2 | D. 입력 검증 | (12) 입력 Schema 및 업무 파라미터 검증 | Map → 도메인 DTO 바인딩 | BSL-F-12 | `core/validator/ParameterBinder.java` | `bind(parameters, handler.requestType())  Executor:119` | `BS-VAL-001` | ✅ 완료 |
+| D-1-3 | D. 입력 검증 | (12) 입력 Schema 및 업무 파라미터 검증 | 기준년월 형식 검증 | BSL-F-12 | `core/validator/ValidationUtils.java` | `requireYearMonth(field, value)` | `BS-VAL-001` | ✅ 완료 |
+| D-1-4 | D. 입력 검증 | (12) 입력 Schema 및 업무 파라미터 검증 | 허용 길이·범위 검증 | BSL-F-12 | `core/validator/ValidationUtils.java` | `maxLength(field, value, max)` | `BS-VAL-002` | ⬜ 미구현 |
+| D-1-5 | D. 입력 검증 | (12) 입력 Schema 및 업무 파라미터 검증 | 서비스별 업무 검증 | BSL-F-12 | `domain/*/Dummy*StatusHandler.java (5종)` | `handler.validate(context, req)  Executor:120` | `BS-VAL-001` | ✅ 완료 |
+| | | | | | | | | |
+| E-1-1 | E. 감사 시작 | (13) 감사 시작 로그 기록 | AuditRecord 생성 | BSL-F-13 | `core/audit/AuditRecord.java` | `AuditRecord.from(context)  Executor:126` | — | ✅ 완료 |
+| E-1-2 | E. 감사 시작 | (13) 감사 시작 로그 기록 | 파라미터 Hash 산출 | BSL-F-13 | `core/audit/ConsoleAuditLogger.java` | `hash(parameters)` | — | ✅ 완료 |
+| E-1-3 | E. 감사 시작 | (13) 감사 시작 로그 기록 | 운영 정보 세팅 | BSL-F-13 | `core/audit/ConsoleAuditLogger.java` | `SERVER_INSTANCE, APPLICATION_VERSION` | — | ⚠️ Mock |
+| E-1-4 | E. 감사 시작 | (13) 감사 시작 로그 기록 | 시작 로그 출력 | BSL-F-13 | `core/audit/ConsoleAuditLogger.java` | `start(context, metadata, parameters)` | — | ⚠️ Mock |
+| E-1-5 | E. 감사 시작 | (13) 감사 시작 로그 기록 | 감사로그 DB 저장 | BSL-F-13 | `persistence/mapper/BsCallLogMapper.java (계약만)` | `insertStart(BsCallLog)` | — | ⬜ 미구현 |
+| | | | | | | | | |
+| F-1-1 | F. 업무 처리 | (14) Business Service Handler 실행 | Handler Registry 구축 | BSL-F-14 | `core/dispatcher/DefaultBusinessServiceDispatcher.java` | `initRegistry() @PostConstruct` | — | ✅ 완료 |
+| F-1-2 | F. 업무 처리 | (14) Business Service Handler 실행 | serviceId → Bean 조회 | BSL-F-14 | `core/dispatcher/DefaultBusinessServiceDispatcher.java` | `dispatch(context, payload)  Executor:118` | `BS-SVC-404` | ✅ 완료 |
+| F-1-3 | F. 업무 처리 | (14) Business Service Handler 실행 | 업무 처리 실행 | BSL-F-14 | `domain/{closing,journal,expense,statement,csm}/Dummy*StatusHandler.java` | `handler.process(context, req)  Executor:130` | — | ⚠️ Mock |
+| F-1-4 | F. 업무 처리 | (14) Business Service Handler 실행 | 결과 없음 경고 등록 | BSL-F-14 | `core/context/ServiceContext.java` | `addWarning(code, message)` | `BS-DATA-000` | ✅ 완료 |
+| F-2-1 | F. 업무 처리 | (15) Legacy Adapter 통한 기존 Service 호출 | Legacy Adapter 호출 | BSL-F-15 | `legacy/adapter/Dummy*StatusLegacyAdapter.java (5종)` | `adapter.invoke(request)` | `BS-LEG-500` | ⚠️ Mock |
+| F-2-2 | F. 업무 처리 | (15) Legacy Adapter 통한 기존 Service 호출 | Mock 데이터 보유 판정 | BSL-F-15 | `legacy/adapter/MockDataPolicy.java` | `hasData(closingYearMonth)` | `BS-DATA-000` | ⚠️ Mock |
+| F-2-3 | F. 업무 처리 | (15) Legacy Adapter 통한 기존 Service 호출 | 도메인 응답 데이터 생성 | BSL-F-15 | `legacy/adapter/Dummy*StatusLegacyAdapter.java` | `invoke() 내부` | — | ⚠️ Mock |
+| F-2-4 | F. 업무 처리 | (15) Legacy Adapter 통한 기존 Service 호출 | Legacy 연계정보 반환 | BSL-F-15 | `api/dto/response/LegacyBinding.java` | `new LegacyBinding(batchProgramId, screenName)` | — | ⚠️ Mock |
+| F-2-5 | F. 업무 처리 | (15) Legacy Adapter 통한 기존 Service 호출 | Legacy 예외 변환 | BSL-F-15 | `core/exception/LegacyServiceException.java` | `(실구현) try-catch` | `BS-LEG-500` | ⬜ 미구현 |
+| F-2-6 | F. 업무 처리 | (15) Legacy Adapter 통한 기존 Service 호출 | Timeout 처리 | BSL-F-15 | `core/exception/ServiceTimeoutException.java` | `(실구현) metadata.timeoutMs 적용` | `BS-SYS-504` | ⬜ 미구현 |
+| F-3-1 | F. 업무 처리 | (16) 결과 DTO 표준 JSON 변환 및 마스킹 | 마스킹 정책 적용 | BSL-F-16 | `core/security/DefaultMaskingPolicy.java` | `mask(result, policy)  Executor:133` | — | ⚠️ Mock |
+| F-3-2 | F. 업무 처리 | (16) 결과 DTO 표준 JSON 변환 및 마스킹 | JSON 직렬화 규칙 적용 | BSL-F-16 | `src/main/resources/application.yml` | `spring.jackson.*` | — | ✅ 완료 |
+| | | | | | | | | |
+| G-1-1 | G. 감사 종료·응답 | (17) 감사 성공/실패 로그 기록 | 성공 로그 기록 | BSL-F-17 | `core/audit/ConsoleAuditLogger.java` | `success(record, elapsedMs, resultCount)  Executor:138` | — | ⚠️ Mock |
+| G-1-2 | G. 감사 종료·응답 | (17) 감사 성공/실패 로그 기록 | 실패 로그 기록 | BSL-F-17 | `core/audit/ConsoleAuditLogger.java` | `fail(record, elapsedMs, httpStatus, code, errorId, msg)  Executor:174` | — | ⚠️ Mock |
+| G-1-3 | G. 감사 종료·응답 | (17) 감사 성공/실패 로그 기록 | 감사 누락 보정 | BSL-F-17 | `core/executor/DefaultBusinessServiceExecutor.java` | `handleFailure()  :171` | — | ✅ 완료 |
+| G-1-4 | G. 감사 종료·응답 | (17) 감사 성공/실패 로그 기록 | 결과 건수 산출 | BSL-F-17 | `core/executor/DefaultBusinessServiceExecutor.java` | `resultCountOf(masked)` | — | ✅ 완료 |
+| G-2-1 | G. 감사 종료·응답 | (18) 표준 Response 반환 | 성공 Envelope 생성 | BSL-F-18 | `core/response/DefaultStandardResponseBuilder.java` | `success(context, metadata, result, elapsedMs)  Executor:141` | — | ✅ 완료 |
+| G-2-2 | G. 감사 종료·응답 | (18) 표준 Response 반환 | 오류 Envelope 생성 | BSL-F-18 | `core/response/DefaultStandardResponseBuilder.java` | `error(context, errorCode, message, errorId, details, elapsedMs)  Executor:181` | — | ✅ 완료 |
+| G-2-3 | G. 감사 종료·응답 | (18) 표준 Response 반환 | Error ID 채번 | BSL-F-18 | `core/context/IdGenerator.java` | `newErrorId()  Executor:159` | — | ✅ 완료 |
+| G-2-4 | G. 감사 종료·응답 | (18) 표준 Response 반환 | HTTP Status 결정 | BSL-F-18 | `core/exception/ErrorCode.java` | `httpStatus()` | — | ✅ 완료 |
+| G-2-5 | G. 감사 종료·응답 | (18) 표준 Response 반환 | 내부 오류 상세 은닉 | BSL-F-18 | `core/executor/DefaultBusinessServiceExecutor.java` | `:148 catch(Exception), :177` | `BS-SYS-500` | ✅ 완료 |
+| G-2-6 | G. 감사 종료·응답 | (18) 표준 Response 반환 | 경고 목록 반영 | BSL-F-18 | `core/response/DefaultStandardResponseBuilder.java` | `context.getWarnings() → response.warnings` | `BS-DATA-000` | ✅ 완료 |
+| | | | | | | | | |
+| H-1-1 | H. 부가 API | Catalog 조회 | 서비스 목록 조회 | BSL-A-01 | `api/controller/BusinessServiceController.java` | `catalog()  :71` | — | ⚠️ Mock |
+| H-1-2 | H. 부가 API | Catalog 조회 | 서비스 단건 조회 | BSL-A-02 | `api/controller/BusinessServiceController.java` | `catalogDetail()  :81` | `BS-SVC-404` | ⚠️ Mock |
+| H-2-1 | H. 부가 API | 호출 이력 조회 | Request ID 기준 이력 조회 | BSL-A-03 | `api/controller/BusinessServiceController.java` | `callLog()  :100` | — | ⬜ 미구현 |
+| H-3-1 | H. 부가 API | Console — 서비스 명세 관리(CON-01) | 명세 목록 조회 | BSL-A-04 | `console/ServiceSpecificationConsoleController.java` | `list()  :67` | — | ⚠️ Mock |
+| H-3-2 | H. 부가 API | Console — 서비스 명세 관리(CON-01) | 명세 등록·수정 | BSL-A-05 | `console/ServiceSpecificationConsoleController.java` | `save(form)  :93` | `BS-VAL-001` | ⚠️ Mock |
+| H-3-3 | H. 부가 API | Console — 서비스 명세 관리(CON-01) | Bean 자동 검증 | BSL-A-06 | `console/ServiceSpecificationValidator.java` | `validate(form) / validateBean(form)` | `BS-VAL-001` | ✅ 완료 |
+| H-3-4 | H. 부가 API | Console — 서비스 명세 관리(CON-01) | 사용/미사용 전환 | BSL-A-07 | `console/ServiceSpecificationConsoleController.java` | `changeActive()  :119` | `BS-SVC-404` | ⚠️ Mock |
+| H-4-1 | H. 부가 API | Console — 서비스 Test(CON-02) | 서비스 Test 실행 | BSL-A-08 | `console/ServiceTestConsoleController.java` | `test()  :42` | 전 오류코드 | ⚠️ Mock |
+| | | | | | | | | |
+| I-1-1 | I. 공통 예외 처리 | 표준 오류 정의 | 오류코드 Enum 정의 | - | `core/exception/ErrorCode.java` | `code(), httpStatus(), defaultMessage()` | 전 11종 | ✅ 완료 |
+| I-1-2 | I. 공통 예외 처리 | 표준 오류 정의 | 표준 예외 클래스 정의 | - | `core/exception/*.java (8종)` | `BusinessServiceException 외 7종` | — | ✅ 완료 |
+| I-2-1 | I. 공통 예외 처리 | 예외 → 표준 응답 변환 | Executor 예외 변환 | - | `core/executor/DefaultBusinessServiceExecutor.java` | `handleFailure()  :144, :148` | 전 오류코드 | ✅ 완료 |
+| I-2-2 | I. 공통 예외 처리 | 예외 → 표준 응답 변환 | Framework 예외 변환 | - | `api/controller/BusinessServiceExceptionHandler.java` | `@RestControllerAdvice 3종` | `BS-VAL-001 / BS-SVC-404 / BS-SYS-500` | ✅ 완료 |
+
+**상태 범례** — ✅ 완료: 실구현과 동일 · ⚠️ Mock: 계약·흐름 완성, 내부 하드코딩 · ⬜ 미구현: DB·SSO·Legacy 연동 후 개발
+
+**집계** — 세부기능 70건 (완료 36 · Mock 27 · 미구현 7)
 
 ---
 
