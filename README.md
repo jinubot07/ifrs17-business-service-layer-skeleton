@@ -1,4 +1,4 @@
-# IFRS17 Business Service Layer — Skeleton (Branch: `Skeleton_v1.4`)
+# IFRS17 Business Service Layer — Skeleton (Branch: `Skeleton_v1.5`)
 
 > IFRS17 시스템 AI 활용 기반 마련 방안 / Business Service Layer
 > **설계서 기준: `IFRS17-BSL-SDD-001` v1.3 (Approved for Development)**
@@ -49,7 +49,7 @@ DB(SqlMap/MyBatis) 연동 및 세부 비즈니스 로직 작성 **이전 단계*
 # 1) 소스 받기
 git clone <REPO_URL>
 cd ifrs17-business-service-layer-skeleton
-git checkout Skeleton_v1.4
+git checkout Skeleton_v1.5
 
 # 2) 빌드 + 단위/통합 테스트 (22건)
 mvn clean test
@@ -492,7 +492,8 @@ Dispatcher가 기동 시 `BusinessServiceHandler` 구현 Bean을 자동 수집�
 ├── pom.xml
 ├── README.md
 ├── docs/IFRS17-BSL-기능정의서_v1.0.md    # 기능정의서 (Markdown)
-├── docs/IFRS17-BSL-기능정의서_v1.0.xlsx  # 기능정의서 Excel (WBS·오류코드·테스트케이스·진척)
+├── docs/IFRS17-BSL-기능정의서_v1.0.xlsx  # 기능정의서 Excel 상세판 (WBS·오류코드·테스트케이스·진척)
+├── docs/IFRS17-BSL-기능정의서_v1.1.xlsx  # 기능정의서 Excel 간단판 (4.3 표준 처리 순서 13단계)
 ├── scripts/smoke-test.sh                # curl 스모크 테스트 (13 시나리오)
 └── src
     ├── main/java/com/koreanre/ifrs17/businessservice/...       # 본문 7장 참조
@@ -516,8 +517,9 @@ Dispatcher가 기동 시 `BusinessServiceHandler` 구현 Bean을 자동 수집�
 | `Skeleton_v1.1` | Skeleton 구현본 v1.1 |
 | `Skeleton_v1.2` | Skeleton 구현본 v1.2 — 설계서 4.1 패키지 구조 전수 준수 |
 | `Skeleton_v1.3` | Skeleton 구현본 v1.3 — 기능정의서 추가 |
-| `Skeleton_v1.4` | Skeleton 구현본 v1.4 — 기능정의서 WBS 상세화 및 Excel 판 추가 (본 브랜치) |
-| `Skeleton_v1.5`, `v1.6`, ... | 이후 Skeleton 개선·보완 시 버전을 올려 신규 브랜치로 관리한다. |
+| `Skeleton_v1.4` | Skeleton 구현본 v1.4 — 기능정의서 WBS 상세화 및 Excel 판 추가 |
+| `Skeleton_v1.5` | Skeleton 구현본 v1.5 — 기능정의서 간단판(v1.1) 추가 (본 브랜치) |
+| `Skeleton_v1.6`, `v1.7`, ... | 이후 Skeleton 개선·보완 시 버전을 올려 신규 브랜치로 관리한다. |
 
 각 버전 브랜치는 `main` 에서 파생하며, 이전 버전 브랜치는 이력 추적을 위해 보존한다.
 
