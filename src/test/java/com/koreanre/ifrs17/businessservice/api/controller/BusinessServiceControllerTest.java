@@ -52,8 +52,8 @@ class BusinessServiceControllerTest {
     }
 
     @Test
-    @DisplayName("X-Request-ID Header 를 보내면 응답에 그대로 사용된다 (설계서 5.2)")
-    void executeClosingStatus_usesProvidedRequestId() throws Exception {
+    @DisplayName("X-Request-ID 를 보내도 응답 requestId 는 서버 채번값이다 (기능정의서 v2.7 - 2단계)")
+    void executeClosingStatus_alwaysGeneratesServerRequestId() throws Exception {
         mockMvc.perform(post(EXECUTE_URI, "IFRS17.CLOSING.STATUS")
                         .contentType(MediaType.APPLICATION_JSON)
                         .header("X-Client-ID", "TEST-CLIENT")
@@ -61,7 +61,8 @@ class BusinessServiceControllerTest {
                         .header("X-User-ID", "E12345")
                         .content("{\"serviceVersion\":\"1.0\",\"parameters\":{\"closingYearMonth\":\"2026-06\"}}"))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.requestId").value("REQ-20260714-0001"));
+                .andExpect(jsonPath("$.requestId").exists())
+                .andExpect(jsonPath("$.requestId").value(org.hamcrest.Matchers.not("REQ-20260714-0001")));
     }
 
     @Test
@@ -115,14 +116,14 @@ class BusinessServiceControllerTest {
     }
 
     @Test
-    @DisplayName("필수 Header(X-Client-ID) 누락은 401 / BS-AUTH-001 로 반환한다 (설계서 5.2 / 11.2)")
-    void executeClosingStatus_authenticationError() throws Exception {
+    @DisplayName("필수 Header(X-Client-ID) 누락은 400 / BS-VAL-001 로 반환한다 (기능정의서 v2.7 - 3단계 (1))")
+    void executeClosingStatus_clientIdMissing() throws Exception {
         mockMvc.perform(post(EXECUTE_URI, "IFRS17.CLOSING.STATUS")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("{\"serviceVersion\":\"1.0\",\"parameters\":{\"closingYearMonth\":\"2026-06\"}}"))
-                .andExpect(status().isUnauthorized())
+                .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.status").value("ERROR"))
-                .andExpect(jsonPath("$.error.code").value("BS-AUTH-001"));
+                .andExpect(jsonPath("$.error.code").value("BS-VAL-001"));
     }
 
     @Test

@@ -13,6 +13,8 @@ public class AuditRecord {
 
     /* 추적 */
     private String requestId;
+    /** 호출자 X-Request-ID 원본 (BS_CALL_LOG.client_request_id). */
+    private String clientRequestId;
     private String traceId;
     private String parentRequestId;
 
@@ -55,6 +57,7 @@ public class AuditRecord {
     public static AuditRecord from(ServiceContext context) {
         AuditRecord record = new AuditRecord();
         record.requestId = context.getRequestId();
+        record.clientRequestId = context.getClientRequestId();
         record.traceId = context.getTraceId();
         record.clientId = context.getClientId();
         record.userId = context.getUserId();
@@ -70,6 +73,10 @@ public class AuditRecord {
 
     public String getRequestId() {
         return requestId;
+    }
+
+    public String getClientRequestId() {
+        return clientRequestId;
     }
 
     public String getTraceId() {

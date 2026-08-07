@@ -13,6 +13,13 @@ import java.time.LocalDateTime;
 public class BsCallLog {
 
     private String requestId;
+
+    /**
+     * 호출자 X-Request-ID 원본 (추적·상관용, 유일성 미보장·중복 가능).
+     * PK 인 requestId 는 호출자 헤더를 사용하지 않고 서버가 채번한 유일값이다.
+     */
+    private String clientRequestId;
+
     private String traceId;
     private String serviceId;
     private String serviceVersion;
@@ -37,6 +44,14 @@ public class BsCallLog {
 
     public void setRequestId(String requestId) {
         this.requestId = requestId;
+    }
+
+    public String getClientRequestId() {
+        return clientRequestId;
+    }
+
+    public void setClientRequestId(String clientRequestId) {
+        this.clientRequestId = clientRequestId;
     }
 
     public String getTraceId() {

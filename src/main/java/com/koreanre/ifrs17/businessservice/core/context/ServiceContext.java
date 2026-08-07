@@ -17,6 +17,15 @@ import java.util.Set;
 public class ServiceContext {
 
     private String requestId;
+
+    /**
+     * 호출자가 보낸 X-Request-ID 원본 (기능정의서 v2.7 - 2단계).
+     *
+     * <p>BS_CALL_LOG.client_request_id 에 원본 그대로 적재되는 정보성 값이다.
+     * 유일성이 보장되지 않아 중복 가능하므로 PK 인 requestId 산출에는 사용하지 않는다.</p>
+     */
+    private String clientRequestId;
+
     private String traceId;
     private String clientId;
     private String userId;
@@ -40,6 +49,14 @@ public class ServiceContext {
 
     public void setRequestId(String requestId) {
         this.requestId = requestId;
+    }
+
+    public String getClientRequestId() {
+        return clientRequestId;
+    }
+
+    public void setClientRequestId(String clientRequestId) {
+        this.clientRequestId = clientRequestId;
     }
 
     public String getTraceId() {
@@ -141,7 +158,8 @@ public class ServiceContext {
 
     @Override
     public String toString() {
-        return "ServiceContext{requestId='" + requestId + "', traceId='" + traceId
+        return "ServiceContext{requestId='" + requestId + "', clientRequestId='" + clientRequestId
+                + "', traceId='" + traceId
                 + "', clientId='" + clientId + "', userId='" + userId
                 + "', departmentCode='" + departmentCode + "', roles=" + roles
                 + ", serviceId='" + serviceId + "', serviceVersion='" + serviceVersion + "'}";

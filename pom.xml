@@ -21,7 +21,7 @@
 
   <groupId>com.koreanre.ifrs17</groupId>
   <artifactId>ifrs17-business-service-layer-skeleton</artifactId>
-  <version>1.0.0-SKELETON</version>
+  <version>1.1.0-SKELETON</version>
   <name>IFRS17 Business Service Layer Skeleton</name>
   <description>IFRS17 Business Service Layer - REST/JSON 통신 껍데기 (Mock Data)</description>
 

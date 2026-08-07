@@ -1,13 +1,16 @@
 package com.koreanre.ifrs17.businessservice.core.metadata;
 
+import com.koreanre.ifrs17.businessservice.core.exception.ServiceNotFoundException;
 import org.springframework.stereotype.Repository;
 import org.springframework.util.StringUtils;
 
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 /**
  * ServiceMetadataRepository 의 Skeleton 구현체.
@@ -85,15 +88,46 @@ public class InMemoryServiceMetadataRepository implements ServiceMetadataReposit
         catalog.put(metadata.getServiceId(), metadata);
     }
 
+    /**
+     * [Mock] BS_SERVICE_VERSION.status_code = 'INACTIVE' 인 버전. 키 형식은 "serviceId:version".
+     * DB 연동 시 BsServiceVersionMapper.selectActive() 조회로 교체한다.
+     */
+    private final Set<String> inactiveVersions = new LinkedHashSet<String>();
+
+    /**
+     * 기능정의서 v2.7 - 5단계 Service Catalog에서 활성 버전 조회.
+     *
+     * <p>세부 단계 4건을 순서대로 판정한다. 네 경우 모두 BS-SVC-404 이며
+     * 오류코드명(서비스 미존재 / 서비스 미사용 / 버전 미존재 / 버전 미사용)으로 구분한다.
+     * BS_SERVICE 는 active_yn, BS_SERVICE_VERSION 은 status_code 로 상태를 표기하므로
+     * 두 테이블의 상태 컬럼명이 서로 다른 점에 유의한다.</p>
+     */
     @Override
     public ServiceMetadata findActive(String serviceId, String version) {
+        // (1) service ID 존재 여부 - BS_SERVICE
         ServiceMetadata metadata = catalog.get(serviceId);
-        if (metadata == null || !metadata.isActive()) {
-            return null;
+        if (metadata == null) {
+            throw new ServiceNotFoundException("서비스 미존재 : serviceId=" + serviceId);
         }
-        if (StringUtils.hasText(version) && !version.equals(metadata.getVersion())) {
-            return null;
+
+        // (2) 사용 여부 - BS_SERVICE.active_yn = 'Y' [핵심 로직]
+        if (!metadata.isActive()) {
+            throw new ServiceNotFoundException("서비스 미사용 : serviceId=" + serviceId);
         }
+
+        // (3) 버전 존재 여부 - BS_SERVICE_VERSION (PK service_id + version)
+        String resolvedVersion = StringUtils.hasText(version) ? version : metadata.getVersion();
+        if (!resolvedVersion.equals(metadata.getVersion())) {
+            throw new ServiceNotFoundException("버전 미존재 : serviceId=" + serviceId
+                    + ", version=" + resolvedVersion);
+        }
+
+        // (4) 버전 상태 - BS_SERVICE_VERSION.status_code = 'ACTIVE' [핵심 로직]
+        if (inactiveVersions.contains(serviceId + ":" + resolvedVersion)) {
+            throw new ServiceNotFoundException("버전 미사용(INACTIVE) : serviceId=" + serviceId
+                    + ", version=" + resolvedVersion);
+        }
+
         return metadata;
     }
 
