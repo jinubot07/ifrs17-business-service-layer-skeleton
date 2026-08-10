@@ -10,7 +10,7 @@ import java.util.Map;
 /**
  * ClientAuthenticationService 의 Skeleton 구현체.
  *
- * <p>기능정의서 v2.7 - 3단계 (2) 호출 Client 검증.
+ * <p>별첨E 표준처리순서정의서 v3.0 - 3단계 (2) 호출 Client 검증.
  * BS_CLIENT 의 PK 인 client_id 에 X-Client-ID 와 같은 데이터가 있는지 확인하고,
  * 있으면 active_yn 이 'Y' 인지 확인한다. 미등록과 비활성 모두 BS-AUTH-001(401) 이며,
  * 응답 오류코드로는 구분되지 않고 오류코드명과 감사 로그로 식별한다.</p>

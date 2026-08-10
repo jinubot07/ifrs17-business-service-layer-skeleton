@@ -1,6 +1,7 @@
 package com.koreanre.ifrs17.businessservice.core.metadata;
 
 import com.koreanre.ifrs17.businessservice.core.exception.ServiceNotFoundException;
+import com.koreanre.ifrs17.businessservice.core.exception.ValidationException;
 import org.springframework.stereotype.Repository;
 import org.springframework.util.StringUtils;
 
@@ -95,40 +96,58 @@ public class InMemoryServiceMetadataRepository implements ServiceMetadataReposit
     private final Set<String> inactiveVersions = new LinkedHashSet<String>();
 
     /**
-     * 기능정의서 v2.7 - 5단계 Service Catalog에서 활성 버전 조회.
+     * 별첨E 표준처리순서정의서 v3.0 - 5단계 Service Catalog에서 활성 버전 조회.
      *
-     * <p>세부 단계 4건을 순서대로 판정한다. 네 경우 모두 BS-SVC-404 이며
-     * 오류코드명(서비스 미존재 / 서비스 미사용 / 버전 미존재 / 버전 미사용)으로 구분한다.
-     * BS_SERVICE 는 active_yn, BS_SERVICE_VERSION 은 status_code 로 상태를 표기하므로
+     * <ul>
+     *   <li>(1) Service ID 필수 입력 체크 — 미입력이면 BS-VAL-001(400)</li>
+     *   <li>(2) Service ID 유효성 체크 — BS_SERVICE 존재 여부와 active_yn = 'Y', BS-SVC-404(404)</li>
+     *   <li>(3) 버전 정보 설정 — 요청에 버전이 없으면 해당 서비스의 최신 버전으로 자동 설정</li>
+     *   <li>(4) 버전 정보 유효성 체크 — BS_SERVICE_VERSION 존재 여부와 status_code = 'ACTIVE', BS-SVC-404(404)</li>
+     * </ul>
+     *
+     * <p>BS_SERVICE 는 active_yn, BS_SERVICE_VERSION 은 status_code 로 상태를 표기하므로
      * 두 테이블의 상태 컬럼명이 서로 다른 점에 유의한다.</p>
      */
     @Override
     public ServiceMetadata findActive(String serviceId, String version) {
-        // (1) service ID 존재 여부 - BS_SERVICE
+        // (1) Service ID 필수 입력 체크 - [Path] serviceId
+        if (!StringUtils.hasText(serviceId)) {
+            throw ValidationException.of("serviceId", "Service ID 가 입력되지 않았습니다.");
+        }
+
+        // (2) Service ID 유효성 체크 - BS_SERVICE (service_id, active_yn) [핵심 로직]
         ServiceMetadata metadata = catalog.get(serviceId);
         if (metadata == null) {
             throw new ServiceNotFoundException("서비스 미존재 : serviceId=" + serviceId);
         }
-
-        // (2) 사용 여부 - BS_SERVICE.active_yn = 'Y' [핵심 로직]
         if (!metadata.isActive()) {
             throw new ServiceNotFoundException("서비스 미사용 : serviceId=" + serviceId);
         }
 
-        // (3) 버전 존재 여부 - BS_SERVICE_VERSION (PK service_id + version)
-        String resolvedVersion = StringUtils.hasText(version) ? version : metadata.getVersion();
+        // (3) 버전 정보 설정 - 요청에 버전이 없으면 최신 버전으로 자동 설정
+        String resolvedVersion = StringUtils.hasText(version) ? version : latestVersionOf(metadata);
+
+        // (4) 버전 정보 유효성 체크 - BS_SERVICE_VERSION (version, status_code) [핵심 로직]
         if (!resolvedVersion.equals(metadata.getVersion())) {
             throw new ServiceNotFoundException("버전 미존재 : serviceId=" + serviceId
                     + ", version=" + resolvedVersion);
         }
-
-        // (4) 버전 상태 - BS_SERVICE_VERSION.status_code = 'ACTIVE' [핵심 로직]
         if (inactiveVersions.contains(serviceId + ":" + resolvedVersion)) {
             throw new ServiceNotFoundException("버전 미사용(INACTIVE) : serviceId=" + serviceId
                     + ", version=" + resolvedVersion);
         }
 
         return metadata;
+    }
+
+    /**
+     * 서비스의 최신 버전.
+     *
+     * <p><b>[Mock]</b> In-Memory Catalog 는 서비스당 버전 1건만 보유하므로 그 값을 반환한다.
+     * DB 연동 시 BS_SERVICE_VERSION 에서 status_code = 'ACTIVE' 인 최신 version 조회로 교체한다.</p>
+     */
+    private String latestVersionOf(ServiceMetadata metadata) {
+        return metadata.getVersion();
     }
 
     @Override

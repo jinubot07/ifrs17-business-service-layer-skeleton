@@ -15,7 +15,7 @@ import java.util.Map;
 /**
  * 표준 Request 자체(Envelope)와 필수 업무 파라미터에 대한 공통 검증.
  *
- * <p>기능정의서 v2.7 - 7단계 (1) 입력 Schema 및 업무 파라미터 검증.
+ * <p>별첨E 표준처리순서정의서 v3.0 - 7단계 (1) 입력 Schema 및 업무 파라미터 검증.
  * BS_SERVICE_PARAM (PK service_id + version + param_name) 에서 요청 serviceId 와 확정 version 의
  * 파라미터 정의 목록을 조회하고, required_yn 이 'Y' 인 필수 파라미터가 Request 의 parameters 에
  * 모두 입력되었는지 확인한다. 미입력 시 BS-VAL-001(400).</p>

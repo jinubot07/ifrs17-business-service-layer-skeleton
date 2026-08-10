@@ -5,7 +5,7 @@ import org.springframework.stereotype.Component;
 /**
  * MaskingPolicy 의 Skeleton 구현체.
  *
- * <p>기능정의서 v2.7 - 11단계 (2) 결과 DTO 마스킹.
+ * <p>별첨E 표준처리순서정의서 v3.0 - 11단계 (2) 결과 DTO 마스킹.
  * 5단계에서 조회한 ServiceMetadata.sensitivePolicy(부록 B sensitive_policy)를 정책 코드로 받아
  * 결과 DTO 의 민감정보 필드를 마스킹한다.</p>
  *

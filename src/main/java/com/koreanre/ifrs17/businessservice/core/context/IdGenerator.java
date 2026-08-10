@@ -10,7 +10,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 /**
  * Request ID / Trace ID / Error ID 생성기.
  *
- * <p>기능정의서 v2.7 - 2단계 Request ID 생성 또는 검증.
+ * <p>별첨E 표준처리순서정의서 v3.0 - 2단계 Request ID 생성 또는 검증.
  * request_id 는 호출자 입력 여부와 무관하게 항상 서버가 채번하며,
  * 테이블 설계서 BS_CALL_LOG 의 PK 양식 {@code REQ-yyyyMMddHHmmssSSS-n} 을 따른다.
  * (예: REQ-20260714093012345-1)</p>

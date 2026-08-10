@@ -12,7 +12,7 @@ import java.util.Set;
 /**
  * AuthorizationService 의 Skeleton 구현체.
  *
- * <p>기능정의서 v2.7 - 6단계 서비스/역할 권한 확인.</p>
+ * <p>별첨E 표준처리순서정의서 v3.0 - 6단계 서비스/역할 권한 확인.</p>
  * <ul>
  *   <li>(1) BS_CLIENT_SERVICE (PK client_id + service_id) 등록 여부와 active_yn = 'Y' 판정</li>
  *   <li>(2) BS_SERVICE_ROLE (PK service_id + role_code) 의 필요 권한 코드와

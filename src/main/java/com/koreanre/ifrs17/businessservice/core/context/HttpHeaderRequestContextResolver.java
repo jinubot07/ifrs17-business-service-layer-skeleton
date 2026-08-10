@@ -13,7 +13,7 @@ import java.util.LinkedHashSet;
 /**
  * RequestContextResolver 의 Skeleton 구현체.
  *
- * <p>기능정의서 v2.7 기준 담당 범위</p>
+ * <p>별첨E 표준처리순서정의서 v3.0 기준 담당 범위</p>
  * <ul>
  *   <li>2단계 (1) X-Request-ID 입력 여부 확인. 미입력이면 client_request_id 를 적재하지 않는다(NULL).</li>
  *   <li>2단계 (2) 입력값은 client_request_id 에 원본 그대로 보관하고, PK 인 request_id 는 항상 서버가 채번한다.</li>

@@ -14,8 +14,11 @@ public interface BsCallLogMapper {
     /** 감사 시작 로그 INSERT (설계서 4.3 - 8단계). */
     int insertStart(BsCallLog callLog);
 
-    /** 감사 성공/실패 로그 UPDATE (설계서 4.3 - 12단계). */
-    int updateResult(BsCallLog callLog);
+    /** 감사 성공 로그 UPDATE (별첨E v3.0 - 12단계 (1)). */
+    int updateSuccess(BsCallLog callLog);
+
+    /** 감사 실패 로그 UPDATE (별첨E v3.0 - 12단계 (1)). */
+    int updateFail(BsCallLog callLog);
 
     /** Request ID 기준 호출 이력 조회 (설계서 5.1 GET /calls/{requestId}). */
     BsCallLog selectByRequestId(String requestId);

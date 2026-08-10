@@ -16,7 +16,7 @@ import java.util.Map;
 /**
  * AuditLogger 의 Skeleton 구현체.
  *
- * <p>기능정의서 v2.7 - 8단계 감사 시작 로그 기록 / 12단계 감사 성공·실패 로그 기록.</p>
+ * <p>별첨E 표준처리순서정의서 v3.0 - 8단계 감사 시작 로그 기록 / 12단계 감사 성공·실패 로그 기록.</p>
  * <ul>
  *   <li>8단계 : 2·3·5·7단계에서 확정된 값으로 적재 항목을 조립하고(parameters 는 parameter_hash 로 변환),
  *       PK 인 request_id 를 유일 기준으로 BS_CALL_LOG 에 INSERT 한다. status_code 는 RUNNING.</li>
@@ -35,7 +35,7 @@ public class ConsoleAuditLogger implements AuditLogger {
 
     /** [Mock] 실제 WAS 인스턴스 식별자로 교체 대상. */
     private static final String SERVER_INSTANCE = "IFRS17-WAS-SKELETON-01";
-    private static final String APPLICATION_VERSION = "1.1.0-SKELETON";
+    private static final String APPLICATION_VERSION = "1.2.0-SKELETON";
 
     /** DB 연동 전에는 Bean 이 없으므로 선택 주입한다. */
     @Autowired(required = false)
@@ -103,7 +103,7 @@ public class ConsoleAuditLogger implements AuditLogger {
                 + ", elapsedMs=" + elapsedMs
                 + ", completedAt=" + record.getCompletedAt());
 
-        updateResult(record);
+        update(record, true);
     }
 
     @Override
@@ -126,19 +126,23 @@ public class ConsoleAuditLogger implements AuditLogger {
                 + ", elapsedMs=" + elapsedMs
                 + ", completedAt=" + record.getCompletedAt());
 
-        updateResult(record);
+        update(record, false);
     }
 
     /** BS_CALL_LOG UPDATE. INSERT 와 동일하게 실패해도 업무 응답에 영향을 주지 않는다. */
-    private void updateResult(AuditRecord record) {
+    private void update(AuditRecord record, boolean success) {
         BsCallLog callLog = toCallLog(record);
         try {
             if (bsCallLogMapper == null) {
                 throw new IllegalStateException("BsCallLogMapper 구현체가 없습니다(Skeleton).");
             }
-            bsCallLogMapper.updateResult(callLog);
+            if (success) {
+                bsCallLogMapper.updateSuccess(callLog);
+            } else {
+                bsCallLogMapper.updateFail(callLog);
+            }
         } catch (Exception e) {
-            fallback("UPDATE", record.getRequestId(), e);
+            fallback(success ? "UPDATE-SUCCESS" : "UPDATE-FAIL", record.getRequestId(), e);
         }
     }
 
