@@ -26,6 +26,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
 
 import javax.servlet.http.HttpServletRequest;
+import java.time.LocalDateTime;
 
 /**
  * BusinessServiceExecutor 기본 구현체 — 설계서 4.3 표준 처리 순서(13단계)의 템플릿.
@@ -94,7 +95,14 @@ public class DefaultBusinessServiceExecutor implements BusinessServiceExecutor {
 
         try {
             // (1)(2) HTTP Header/Body 수신 + Request ID 생성 또는 검증 + (4) SSO 사용자 Context 추출
-            context = requestContextResolver.resolve(httpRequest, serviceId, request);
+            // resolve() 는 3단계 (1) X-Client-ID 필수 입력 체크까지 수행하므로 예외로 빠질 수 있다.
+            // 그때도 오류 응답에 추적 ID 가 실리도록 최소 Context 를 확보한 뒤 예외를 그대로 올린다.
+            try {
+                context = requestContextResolver.resolve(httpRequest, serviceId, request);
+            } catch (RuntimeException e) {
+                context = traceOnlyContext(httpRequest, serviceId);
+                throw e;
+            }
 
             // (3) 호출 Client 검증
             clientAuthenticationService.authenticate(context);
@@ -150,6 +158,28 @@ public class DefaultBusinessServiceExecutor implements BusinessServiceExecutor {
             return handleFailure(context, auditRecord, startedAt, ErrorCode.BS_SYS_500,
                     ErrorCode.BS_SYS_500.defaultMessage(), e);
         }
+    }
+
+    /**
+     * 추적 ID 만 채운 최소 Context.
+     *
+     * <p>Context 확보 단계에서 검증 실패로 빠졌을 때, 오류 응답과 감사 로그가
+     * requestId · traceId 없이 나가지 않도록 대체한다(설계서 12.3 추적 기준 키).</p>
+     */
+    private ServiceContext traceOnlyContext(HttpServletRequest httpRequest, String serviceId) {
+        ServiceContext context = new ServiceContext();
+        context.setRequestId(idGenerator.newRequestId());
+        context.setServiceId(serviceId);
+        if (httpRequest != null) {
+            context.setClientRequestId(httpRequest.getHeader("X-Request-ID"));
+            context.setTraceId(httpRequest.getHeader("X-Trace-ID"));
+            context.setClientId(httpRequest.getHeader("X-Client-ID"));
+        }
+        if (context.getTraceId() == null) {
+            context.setTraceId(idGenerator.newTraceId());
+        }
+        context.setRequestedAt(LocalDateTime.now());
+        return context;
     }
 
     private ResponseEntity<StandardResponse<?>> handleFailure(ServiceContext context, AuditRecord auditRecord,

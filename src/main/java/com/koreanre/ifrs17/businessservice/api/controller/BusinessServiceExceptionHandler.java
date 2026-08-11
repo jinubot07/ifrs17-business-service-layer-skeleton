@@ -17,6 +17,7 @@ import org.springframework.web.context.request.WebRequest;
 import org.springframework.web.servlet.NoHandlerFoundException;
 
 import javax.servlet.http.HttpServletRequest;
+import java.time.LocalDateTime;
 
 /**
  * Executor 진입 이전(Servlet/Spring MVC 단계)에서 발생하는 오류를 표준 Error Response 로 변환한다.
@@ -60,7 +61,7 @@ public class BusinessServiceExceptionHandler {
     private ResponseEntity<StandardResponse<?>> build(WebRequest request, ErrorCode errorCode, String message) {
         HttpServletRequest httpRequest = (request instanceof ServletWebRequest)
                 ? ((ServletWebRequest) request).getRequest() : null;
-        ServiceContext context = requestContextResolver.resolve(httpRequest, null, null);
+        ServiceContext context = resolveQuietly(httpRequest);
         String errorId = idGenerator.newErrorId();
 
         System.out.println("[BSL-ERROR] errorId=" + errorId
@@ -71,5 +72,32 @@ public class BusinessServiceExceptionHandler {
         HttpHeaders headers = new HttpHeaders();
         return ResponseEntity.status(HttpStatus.valueOf(errorCode.httpStatus())).headers(headers)
                 .body((StandardResponse<?>) body);
+    }
+
+    /**
+     * 오류 응답 조립용 Context 확보.
+     *
+     * <p>{@code resolve()} 는 3단계 (1) X-Client-ID 필수 입력 체크를 포함하므로 Header 가 없으면
+     * 예외를 던진다. 오류 응답을 만드는 경로에서 그 예외가 다시 발생하면 예외 처리기 자신이 실패하여
+     * 설계서 5.5 표준 Error Response 대신 Servlet 기본 오류 페이지가 나간다.
+     * 따라서 이 경로에서는 검증 실패를 삼키고 추적 ID 만 채운 최소 Context 로 대체한다.</p>
+     */
+    private ServiceContext resolveQuietly(HttpServletRequest httpRequest) {
+        try {
+            return requestContextResolver.resolve(httpRequest, null, null);
+        } catch (RuntimeException e) {
+            ServiceContext context = new ServiceContext();
+            context.setRequestId(idGenerator.newRequestId());
+            if (httpRequest != null) {
+                context.setClientRequestId(httpRequest.getHeader("X-Request-ID"));
+                context.setTraceId(httpRequest.getHeader("X-Trace-ID"));
+                context.setClientId(httpRequest.getHeader("X-Client-ID"));
+            }
+            if (context.getTraceId() == null) {
+                context.setTraceId(idGenerator.newTraceId());
+            }
+            context.setRequestedAt(LocalDateTime.now());
+            return context;
+        }
     }
 }
